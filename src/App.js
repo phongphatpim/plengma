@@ -70,24 +70,121 @@ const Navigation = ({ currentPage, setCurrentPage }) => {
   );
 };
 
+// const Footer = () => {
+//   return (
+//     <footer className="bg-purple-900 text-white py-6">
+//       <div className="container mx-auto text-center">
+//         <p>© 2024 PlengMa - Karaoke and Me!</p>
+//         <div className="mt-4 space-x-4">
+//           {/*<a href="#" className="hover:text-purple-200">
+//             นโยบายความเป็นส่วนตัว
+//           </a>*/}
+//           <a href="#" className="hover:text-purple-200">
+//             เงื่อนไขการใช้งาน
+//           </a>
+//           {/* <a href="#" className="hover:text-purple-200">
+//             ติดต่อเรา
+//           </a> */}
+//         </div>
+//       </div>
+//     </footer>
+//   );
+// };
+
 const Footer = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const toggleModal = () => {
+    setIsModalOpen(!isModalOpen);
+  };
+
   return (
-    <footer className="bg-purple-900 text-white py-6">
-      <div className="container mx-auto text-center">
-        <p>© 2024 PlengMa - Karaoke and Me!</p>
-        <div className="mt-4 space-x-4">
-          {/*<a href="#" className="hover:text-purple-200">
-            นโยบายความเป็นส่วนตัว
-          </a>*/}
-          <a href="#" className="hover:text-purple-200">
-            เงื่อนไขการใช้งาน
-          </a>
-          {/* <a href="#" className="hover:text-purple-200">
-            ติดต่อเรา
-          </a> */}
+    <>
+      <footer className="bg-purple-900 text-white py-6">
+        <div className="container mx-auto text-center">
+          <p>© 2024 PlengMa - Karaoke and Me!</p>
+          <div className="mt-4 space-x-4">
+            <a href="#" className="hover:text-purple-200" onClick={toggleModal}>
+              เงื่อนไขการใช้งาน
+            </a>
+          </div>
         </div>
-      </div>
-    </footer>
+      </footer>
+
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-3/4 max-w-lg p-6">
+            <h2 className="text-xl font-bold mb-4">เงื่อนไขการใช้งานเว็บไซต์ PlengMa.com</h2>
+            <p>
+              ยินดีต้อนรับสู่เว็บไซต์ <strong>PlengMa.com</strong> กรุณาอ่านเงื่อนไขการใช้งานต่อไปนี้อย่างละเอียด
+              การเข้าใช้เว็บไซต์แสดงว่าคุณยอมรับเงื่อนไขเหล่านี้ทุกประการ:
+            </p>
+            <ol className="list-decimal list-inside mt-4">
+              <li>
+                <strong>สนับสนุนให้ใช้เฉพาะผลงานเพลงที่ถูกลิขสิทธิ์</strong>
+                <ul className="list-disc list-inside ml-4">
+                  <li>เว็บไซต์ <strong>PlengMa.com</strong> ไม่มีส่วนเกี่ยวข้องกับการละเมิดลิขสิทธิ์ในทุกกรณี</li>
+                  <li>ห้ามใช้งานเว็บไซต์เพื่อดาวน์โหลด คัดลอก หรือเผยแพร่เนื้อหาที่ละเมิดลิขสิทธิ์</li>
+                </ul>
+              </li>
+              <li>
+                <strong>ไม่สนับสนุนการเผยแพร่และทำซ้ำสำหรับผลงานเพลงที่มีลิขสิทธิ์</strong>
+                <ul className="list-disc list-inside ml-4">
+                  <li>
+                    ห้ามใช้เว็บไซต์นี้เพื่อทำซ้ำ ดัดแปลง หรือเผยแพร่เนื้อหาที่มีอยู่ภายในเว็บไซต์ในรูปแบบใดๆ โดยไม่ได้รับอนุญาต
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <strong>ใช้เพื่อความบันเทิงภายในบ้านเท่านั้น</strong>
+                <ul className="list-disc list-inside ml-4">
+                  <li>
+                    เว็บไซต์นี้พัฒนาขึ้นเพื่อความบันเทิงส่วนบุคคลเท่านั้น
+                  </li>
+                  <li>
+                    ห้ามใช้เว็บไซต์นี้ในลักษณะที่ขัดต่อจุดประสงค์หลัก เช่น การใช้งานในพื้นที่สาธารณะ หรือกิจกรรมที่เกินขอบเขตการใช้งานส่วนตัว
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <strong>ห้ามใช้เชิงธุรกิจหรือหารายได้</strong>
+                <ul className="list-disc list-inside ml-4">
+                  <li>
+                    ห้ามนำเว็บไซต์นี้ไปใช้เพื่อวัตถุประสงค์ทางธุรกิจ เช่น การจัดคาราโอเกะเชิงพาณิชย์ การหารายได้ หรือการโฆษณา
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <strong>ความรับผิดชอบของผู้ใช้</strong>
+                <ul className="list-disc list-inside ml-4">
+                  <li>
+                    ผู้ใช้ต้องรับผิดชอบต่อการใช้งานเว็บไซต์ของตนเอง และยินยอมที่จะไม่ใช้เว็บไซต์ในทางที่ผิดกฎหมายหรือผิดจริยธรรม
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <strong>การแก้ไขเงื่อนไขการใช้งาน</strong>
+                <ul className="list-disc list-inside ml-4">
+                  <li>
+                    เว็บไซต์ <strong>PlengMa.com</strong> ขอสงวนสิทธิ์ในการแก้ไขหรือปรับปรุงเงื่อนไขการใช้งานโดยไม่ต้องแจ้งให้ทราบล่วงหน้า
+                  </li>
+                </ul>
+              </li>
+            </ol>
+            <div className="mt-6 text-right">
+              <button
+                onClick={toggleModal}
+                className="bg-purple-900 text-white px-4 py-2 rounded hover:bg-purple-700"
+              >
+                ปิด
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+    </>
   );
 };
 
