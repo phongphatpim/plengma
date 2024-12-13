@@ -32,10 +32,6 @@ const CountdownWebsiteV3 = () => {
   const [musicWaves, setMusicWaves] = useState([]);
   const navigate = useNavigate();
 
-  // Target date: 28/12/2024 at 8:08 PM
-  //const targetDate = new Date('2024-12-28T20:08:00+07:00');
-  const targetDate = new Date('2024-12-13T14:30:00+07:00');
-
   // Generate music wave background
   useEffect(() => {
     const generateMusicWaves = () => {
@@ -66,6 +62,8 @@ const CountdownWebsiteV3 = () => {
   }, [isMuted]);
 
   useEffect(() => {
+    const targetDate = new Date('2024-12-28T08:08:00+07:00');
+
     const calculateTimeLeft = () => {
       const difference = targetDate - new Date();
       if (difference > 0) {
@@ -90,7 +88,7 @@ const CountdownWebsiteV3 = () => {
     }, 1000);
 
     return () => clearInterval(timer); // ล้าง timer เมื่อคอมโพเนนต์ถูก unmount
-  }, [navigate, targetDate]);
+  }, [navigate]);
 
   // Rotate promotions
   useEffect(() => {
