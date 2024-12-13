@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Mic, Volume2, VolumeX, Music, Headphones } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const promotions = [
   "เปิดประสบการณ์ร้องเพลงใหม่!",
@@ -29,6 +30,7 @@ const CountdownWebsiteV3 = () => {
   const [currentPromotion, setCurrentPromotion] = useState(promotions[0]);
   const [isMuted, setIsMuted] = useState(false);
   const [musicWaves, setMusicWaves] = useState([]);
+  const navigate = useNavigate();
 
   // Target date: 28/12/2024 at 8:08 PM
   const targetDate = new Date('2024-12-28T20:08:00+07:00');
@@ -46,7 +48,7 @@ const CountdownWebsiteV3 = () => {
     };
 
     generateMusicWaves();
-  }, []);
+  }, []); 
 
   useEffect(() => {
     const audio = new Audio('/background-music.mp3');
@@ -91,7 +93,7 @@ const CountdownWebsiteV3 = () => {
     }, 3000);
 
     return () => clearInterval(promotionTimer);
-  }, []);
+  }, [navigate]);
 
   const toggleMute = () => {
     setIsMuted(!isMuted);
