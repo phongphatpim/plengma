@@ -33,7 +33,8 @@ const CountdownWebsiteV3 = () => {
   const navigate = useNavigate();
 
   // Target date: 28/12/2024 at 8:08 PM
-  const targetDate = new Date('2024-12-28T20:08:00+07:00');
+  //const targetDate = new Date('2024-12-28T20:08:00+07:00');
+  const targetDate = new Date('2024-12-13T14:30:00+07:00');
 
   // Generate music wave background
   useEffect(() => {
@@ -70,20 +71,26 @@ const CountdownWebsiteV3 = () => {
       if (difference > 0) {
         const days = Math.floor(difference / (1000 * 60 * 60 * 24));
         const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
-        const minutes = Math.floor((difference / 1000 / 60) % 60);
+        const minutes = Math.floor((difference / (1000 * 60)) % 60);
         const seconds = Math.floor((difference / 1000) % 60);
 
         return { days, hours, minutes, seconds };
       }
-      return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+      return null; // Countdown สิ้นสุด
     };
 
     const timer = setInterval(() => {
-      setTimeLeft(calculateTimeLeft());
+      const time = calculateTimeLeft();
+      if (time) {
+        setTimeLeft(time);
+      } else {
+        clearInterval(timer); // หยุดการทำงานเมื่อ Countdown สิ้นสุด
+        navigate('/home'); // เปลี่ยนเส้นทางไปยังหน้า Home
+      }
     }, 1000);
 
-    return () => clearInterval(timer);
-  }, []);
+    return () => clearInterval(timer); // ล้าง timer เมื่อคอมโพเนนต์ถูก unmount
+  }, [navigate, targetDate]);
 
   // Rotate promotions
   useEffect(() => {
