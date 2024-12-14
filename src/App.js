@@ -114,7 +114,12 @@ const Footer = () => {
       {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg w-3/4 max-w-lg p-6">
+          <div
+            className="bg-white rounded-lg w-11/12 max-w-lg p-6 overflow-y-auto"
+            style={{
+              maxHeight: '90vh', // Limit modal height to 90% of the viewport height
+            }}
+          >
             <h2 className="text-xl font-bold mb-4">เงื่อนไขการใช้งานเว็บไซต์ PlengMa.com</h2>
             <p>
               ยินดีต้อนรับสู่เว็บไซต์ <strong>PlengMa.com</strong> กรุณาอ่านเงื่อนไขการใช้งานต่อไปนี้อย่างละเอียด
@@ -183,10 +188,10 @@ const Footer = () => {
           </div>
         </div>
       )}
-      
     </>
   );
 };
+
 
 const HomePage = ({ setCurrentPage }) => {
   const features = [
