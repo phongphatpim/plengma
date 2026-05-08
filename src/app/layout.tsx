@@ -1,5 +1,46 @@
 import type { Metadata } from "next";
+import {
+  Bai_Jamjuree,
+  Bricolage_Grotesque,
+  IBM_Plex_Mono,
+  Noto_Sans_Thai,
+} from "next/font/google";
 import "./globals.css";
+
+const bricolage = Bricolage_Grotesque({
+  subsets: ["latin"],
+  weight: ["400", "500", "700", "800"],
+  variable: "--font-bricolage",
+  display: "swap",
+});
+
+const baiJamjuree = Bai_Jamjuree({
+  subsets: ["latin", "thai"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-bai",
+  display: "swap",
+});
+
+const notoSansThai = Noto_Sans_Thai({
+  subsets: ["latin", "thai"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-noto-thai",
+  display: "swap",
+});
+
+const ibmPlexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-ibm-mono",
+  display: "swap",
+});
+
+const fontVars = [
+  bricolage.variable,
+  baiJamjuree.variable,
+  notoSansThai.variable,
+  ibmPlexMono.variable,
+].join(" ");
 
 export const metadata: Metadata = {
   title: "เพลงมา — แผงเทปเพลงไทย AI",
@@ -22,16 +63,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="th">
-      <head>
-        {/* Google Fonts — loaded via <link> for reliability */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+Thai:wght@400;500;600;700;800&family=Bai+Jamjuree:wght@400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html lang="th" className={fontVars}>
       <body className="min-h-dvh antialiased">{children}</body>
     </html>
   );

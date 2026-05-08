@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import type { SubmissionPayload } from "@/lib/submission";
 
 // ── Types ────────────────────────────────────────────────────
 interface FormData {
@@ -83,6 +84,8 @@ export default function SubmitForm() {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<FormData>(INITIAL);
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [tapeBg] = useState(() => TAPE_GRADIENTS[Math.floor(Math.random() * TAPE_GRADIENTS.length)]);
 
   const set = (key: keyof FormData, val: string | boolean) =>
@@ -91,6 +94,33 @@ export default function SubmitForm() {
   const progressPct = ((step - 1) / 3) * 100;
 
   const canSubmit = form.cb1 && form.cb2 && form.cb3;
+
+  async function submitForm() {
+    setIsSubmitting(true);
+    setSubmitError(null);
+    try {
+      const payload: SubmissionPayload = { ...form };
+      const res = await fetch("/api/submissions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = (await res.json()) as {
+        ok: boolean;
+        message?: string;
+        errors?: string[];
+      };
+      if (!res.ok || !data.ok) {
+        setSubmitError(data.message ?? "ส่งข้อมูลไม่สำเร็จ กรุณาลองอีกครั้ง");
+        return;
+      }
+      setSubmitted(true);
+    } catch {
+      setSubmitError("เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   // ── Render ─────────────────────────────────────────────────
   return (
@@ -172,7 +202,17 @@ export default function SubmitForm() {
           {step === 1 && <Step1 form={form} set={set} onNext={() => setStep(2)} />}
           {step === 2 && <Step2 form={form} set={set} onNext={() => setStep(3)} onPrev={() => setStep(1)} />}
           {step === 3 && <Step3 form={form} set={set} onNext={() => setStep(4)} onPrev={() => setStep(2)} />}
-          {step === 4 && <Step4 form={form} set={set} onPrev={() => setStep(3)} canSubmit={canSubmit} onSubmit={() => setSubmitted(true)} />}
+          {step === 4 && (
+            <Step4
+              form={form}
+              set={set}
+              onPrev={() => setStep(3)}
+              canSubmit={canSubmit}
+              onSubmit={submitForm}
+              isSubmitting={isSubmitting}
+              submitError={submitError}
+            />
+          )}
         </div>
 
         {/* ─── Live Preview ─── */}
@@ -441,13 +481,16 @@ function Step3({ form, set, onNext, onPrev }: { form: FormData; set: (k: keyof F
 }
 
 // ── Step 4: ยืนยัน ───────────────────────────────────────────
-function Step4({ form, set, onPrev, canSubmit, onSubmit }: {
+function Step4({ form, set, onPrev, canSubmit, onSubmit, isSubmitting, submitError }: {
   form: FormData;
   set: (k: keyof FormData, v: string | boolean) => void;
   onPrev: () => void;
   canSubmit: boolean;
   onSubmit: () => void;
+  isSubmitting: boolean;
+  submitError: string | null;
 }) {
+  const nextDisabled = !canSubmit || isSubmitting;
   return (
     <>
       <StepHeader step={4} title="ยืนยันและส่งเข้าคิว" desc="เกือบเสร็จแล้ว! ก่อนส่ง อ่านและยืนยันข้อตกลง 3 ข้อ — สำคัญมาก ห้ามข้าม" />
@@ -496,11 +539,28 @@ function Step4({ form, set, onPrev, canSubmit, onSubmit }: {
         ทีมงานจะรีวิวภายใน 2-3 วัน หากผ่าน เพลงคุณจะถูกเพิ่มเข้าแผงประจำเดือน MAY 2026 เราจะส่งอีเมลแจ้งผลและลิงก์เพลงของคุณ
       </div>
 
+      {submitError && (
+        <div
+          style={{
+            marginBottom: 16,
+            padding: "10px 12px",
+            borderRadius: 8,
+            border: "1px solid rgba(232,93,140,0.45)",
+            background: "rgba(232,93,140,0.12)",
+            color: "rgba(244,239,230,0.9)",
+            fontFamily: "var(--font-thai)",
+            fontSize: 14,
+          }}
+        >
+          {submitError}
+        </div>
+      )}
+
       <StepActions
         onPrev={onPrev}
-        onSubmit={canSubmit ? onSubmit : undefined}
-        nextLabel="★ ส่งเข้าคิว"
-        nextDisabled={!canSubmit}
+        onSubmit={nextDisabled ? undefined : onSubmit}
+        nextLabel={isSubmitting ? "กำลังส่ง..." : "★ ส่งเข้าคิว"}
+        nextDisabled={nextDisabled}
         isLast
       />
     </>

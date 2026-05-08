@@ -125,7 +125,6 @@ export default function IsoShelf({
             overflowX: "auto",
             overflowY: "hidden",
             padding: "20px 0 40px",
-            WebkitOverflowScrolling: "touch" as any,
           }}
           className="shelf-scroll"
         >
@@ -187,6 +186,7 @@ export default function IsoShelf({
 
       {/* Scrollbar style */}
       <style>{`
+        .shelf-scroll { -webkit-overflow-scrolling: touch; }
         .shelf-scroll::-webkit-scrollbar { height: 6px; }
         .shelf-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 3px; }
         .shelf-scroll::-webkit-scrollbar-thumb { background: rgba(233,185,73,0.4); border-radius: 3px; }

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, type CSSProperties } from "react";
 import { Tape } from "@/types";
 import { TAPE_GRADIENTS, LIGHT_BG } from "./TapeSlot";
 import Link from "next/link";
@@ -141,7 +141,7 @@ export default function TapeModal({ tape, onClose, onPrev, onNext }: TapeModalPr
 
   // Occupied tape modal
   const track = tape.track!;
-  const tags: string[] = (track as any).tags ?? [];
+  const tags = track.tags ?? [];
 
   return (
     <ModalWrapper onClose={onClose} onPrev={onPrev} onNext={onNext}>
@@ -217,7 +217,7 @@ export default function TapeModal({ tape, onClose, onPrev, onNext }: TapeModalPr
             {/* Header row */}
             <div style={{ display: "flex", justifyContent: "space-between", fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.25em", textTransform: "uppercase" as const, color: mutedColor }}>
               <span>PLENGMA</span>
-              <span>{(track as any).side ?? "A"} SIDE</span>
+              <span>{track.side ?? "A"} SIDE</span>
             </div>
 
             {/* Content */}
@@ -232,7 +232,7 @@ export default function TapeModal({ tape, onClose, onPrev, onNext }: TapeModalPr
 
             {/* Side watermark */}
             <div style={{ position: "absolute", bottom: 24, right: 28, fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 90, color: isLight ? "rgba(14,8,32,0.08)" : "rgba(244,239,230,0.07)", lineHeight: 0.8, letterSpacing: "-0.04em", userSelect: "none" }}>
-              {(track as any).side ?? "A"}
+              {track.side ?? "A"}
             </div>
           </div>
 
@@ -299,7 +299,7 @@ export default function TapeModal({ tape, onClose, onPrev, onNext }: TapeModalPr
               );
             })}
             <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, padding: "5px 10px", borderRadius: 100, letterSpacing: "0.2em", textTransform: "uppercase" as const, border: "1px solid rgba(124,139,255,0.5)", color: "var(--periwinkle)", background: "rgba(124,139,255,0.08)" }}>
-              {(track as any).genre ?? "—"}
+              {track.genre ?? "—"}
             </span>
           </div>
 
@@ -316,9 +316,18 @@ export default function TapeModal({ tape, onClose, onPrev, onNext }: TapeModalPr
             }}
           >
             {[
-              { label: "ผู้ฟัง", value: ((track.playCount ?? (track as any).listens ?? 0) as number).toLocaleString() },
-              { label: "ถูกใจ", value: ((track as any).likes ?? "—").toLocaleString() },
-              { label: "ความยาว", value: (track as any).duration ?? "—" },
+              {
+                label: "ผู้ฟัง",
+                value: (track.playCount ?? 0).toLocaleString(),
+              },
+              {
+                label: "ถูกใจ",
+                value:
+                  track.likes != null
+                    ? track.likes.toLocaleString()
+                    : "—",
+              },
+              { label: "ความยาว", value: track.duration ?? "—" },
             ].map(({ label, value }) => (
               <div key={label} style={{ textAlign: "center" }}>
                 <div style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 20, color: "var(--paper)", marginBottom: 4 }}>{value}</div>
@@ -490,7 +499,7 @@ function ModalWrapper({
   );
 }
 
-function navBtnStyle(side: "left" | "right"): React.CSSProperties {
+function navBtnStyle(side: "left" | "right"): CSSProperties {
   return {
     position: "absolute",
     top: "50%",

@@ -84,8 +84,10 @@ function buildTapes(): Tape[] {
         curatorNote: d.curatorNote,
         submittedAt: "2026-05-01",
         playCount: d.listens,
-        // Extended data for modal display:
-        ...({ tags: d.tags, duration: d.duration, likes: d.likes, side: d.side } as any),
+        tags: d.tags,
+        duration: d.duration,
+        likes: d.likes,
+        side: d.side,
       },
     });
   }

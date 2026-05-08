@@ -19,6 +19,11 @@ export interface Track {
   curatorNote?: string;
   submittedAt: string; // ISO date string
   playCount?: number;
+  /** แท็กสำหรับ modal / แผง (เช่น curated, hot, new) */
+  tags?: string[];
+  duration?: string;
+  likes?: number;
+  side?: string;
 }
 
 // ─── Shelf / Month ───────────────────────────────────────────
