@@ -1,0 +1,88 @@
+# เพลงมา (PlengMa)
+
+> แผงเทปเพลงไทย AI คัดสรร — www.plengma.com
+
+Neo-Retro Cassette hub สำหรับเพลงไทยที่สร้างด้วย AI จัดเป็นแผงประจำเดือน 300 ช่อง
+
+---
+
+## Tech Stack
+
+- **Framework**: Next.js 16 (App Router)
+- **Styling**: Tailwind CSS v4 + CSS Variables
+- **Language**: TypeScript
+- **Deploy**: Vercel (region: sin1 — Singapore)
+
+## Brand
+
+- **Concept**: Neo-Retro Cassette — เทปยุค 90 ในจินตนาการของคนยุค AI
+- **Palette**: Ink Night `#0E0820` · Cassette Gold `#E9B949` · Mixtape Pink `#E85D8C` · Reel Blue `#7C8BFF`
+- **Fonts**: Bricolage Grotesque · Bai Jamjuree · IBM Plex Mono · Noto Sans Thai
+
+## Routes
+
+| Route | Description |
+|-------|-------------|
+| `/` | Coming Soon placeholder |
+| `/shelf` | แผงเทป Isometric ประจำเดือน |
+| `/submit` | ฟอร์มส่งเพลงขึ้นแผง (4 steps) |
+| `/about` | เกี่ยวกับเพลงมา |
+
+## Getting Started
+
+```bash
+npm install
+npm run dev
+# → http://localhost:3000
+```
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── layout.tsx        # Root layout + fonts
+│   ├── globals.css       # Brand tokens + Tailwind
+│   ├── page.tsx          # Homepage
+│   ├── shelf/page.tsx    # Monthly shelf
+│   ├── submit/page.tsx   # Submit form
+│   └── about/page.tsx    # About
+├── components/
+│   ├── layout/
+│   │   └── Navbar.tsx
+│   └── tape/
+│       ├── IsoShelf.tsx  # Isometric grid
+│       ├── TapeSlot.tsx  # Single slot (3 states)
+│       ├── TapeModal.tsx # Detail popup
+│       └── SubmitForm.tsx
+├── lib/
+│   ├── mockData.ts       # MAY 2026 shelf data
+│   └── utils.ts          # cn(), BRAND constants
+└── types/
+    └── index.ts          # Tape, Track, MonthlyShelf types
+```
+
+## Deploy (Vercel)
+
+```bash
+# 1. Push to GitHub
+git init && git add . && git commit -m "feat: PM-P0 initial setup"
+git remote add origin https://github.com/YOUR_USERNAME/plengma.git
+git push -u origin main
+
+# 2. Import on Vercel
+# vercel.com/new → import repo → deploy
+
+# 3. Add domain
+# Vercel dashboard → Settings → Domains → plengma.com
+```
+
+## Phase Roadmap
+
+- **Phase 0** ✅ MVP — Shelf, Submit, About, Deploy
+- **Phase 1** 🔜 Backend — DB, Email, Cover Upload, Real Submit Pipeline
+- **Phase 2** — Knowledge Hub, Mini Player, Archive Browser
+
+---
+
+*PlengMa Brand System v1.0 · 2026*

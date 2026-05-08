@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+/* ─── PlengMa Design Tokens ─────────────────────────────── */
+:root {
+  /* Core Palette */
+  --ink:          #0E0820;   /* background หลัก */
+  --ink-2:        #1A1030;   /* layer 2 */
+  --ink-3:        #241742;   /* card surface */
+  --paper:        #F4EFE6;   /* off-white nostalgic */
+  --paper-2:      #E8DFCD;   /* warm cream */
+  --gold:         #E9B949;   /* primary CTA */
+  --gold-deep:    #C8941F;
+  --magenta:      #E85D8C;   /* accent ชมพู */
+  --magenta-deep: #C73D6E;
+  --periwinkle:   #7C8BFF;   /* accent น้ำเงิน */
+  --peri-deep:    #4B5FE8;
+  --mint:         #6FE3C8;   /* "new" / "hot" tag */
+
+  /* Semantic */
+  --bg:      var(--ink);
+  --surface: var(--ink-2);
+  --border:  rgba(244,239,230,0.1);
+  --text:    var(--paper);
+  --muted:   rgba(244,239,230,0.5);
+}
+
+/* ─── Tailwind v4 Theme ──────────────────────────────────── */
+@theme inline {
+  /* Colors */
+  --color-ink:        #0E0820;
+  --color-ink-2:      #1A1030;
+  --color-ink-3:      #241742;
+  --color-paper:      #F4EFE6;
+  --color-paper-2:    #E8DFCD;
+  --color-gold:       #E9B949;
+  --color-gold-deep:  #C8941F;
+  --color-magenta:    #E85D8C;
+  --color-periwinkle: #7C8BFF;
+  --color-mint:       #6FE3C8;
+
+  /* Fonts */
+  --font-display: 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-thai:    'Bai Jamjuree', sans-serif;
+  --font-body:    'Noto Sans Thai', sans-serif;
+  --font-mono:    'IBM Plex Mono', monospace;
+}
+
+/* ─── Base ───────────────────────────────────────────────── */
+html {
+  background-color: var(--ink);
+  color-scheme: dark;
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-body);
+  min-height: 100dvh;
+  overflow-x: hidden;
+  /* Atmospheric grain */
+  background-image:
+    radial-gradient(ellipse at 20% 10%, rgba(124,139,255,0.07) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(232,93,140,0.05) 0%, transparent 50%);
+}
+
+/* Grain texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+  opacity: 0.04;
+  z-index: 9999;
+  mix-blend-mode: overlay;
+}
+
+/* ─── Wire Next.js font variables → PlengMa tokens ─────── */
+@theme inline {
+  --font-display: var(--font-bricolage), system-ui, sans-serif;
+  --font-thai:    var(--font-bai), sans-serif;
+  --font-body:    var(--font-noto-thai), sans-serif;
+  --font-mono:    var(--font-ibm-mono), monospace;
+}
