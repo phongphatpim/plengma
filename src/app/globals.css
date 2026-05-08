@@ -76,3 +76,28 @@ body::before {
   mix-blend-mode: overlay;
 }
 
+/* Logo mark — เหมือน plengma-shelf-v2.html / plengma-submit.html */
+.plengma-logo-mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), var(--magenta) 50%, var(--periwinkle));
+  position: relative;
+  flex-shrink: 0;
+}
+.plengma-logo-mark::after {
+  content: '';
+  position: absolute;
+  inset: 7px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+.plengma-logo-mark::before {
+  content: '';
+  position: absolute;
+  inset: 11px;
+  border-radius: 50%;
+  background: var(--paper);
+  z-index: 1;
+}
+

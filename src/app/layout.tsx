@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import {
   Bai_Jamjuree,
   Bricolage_Grotesque,
@@ -41,6 +41,12 @@ const fontVars = [
   notoSansThai.variable,
   ibmPlexMono.variable,
 ].join(" ");
+
+/** สอดคล้องกับ prototype ใน Doc/Design/*.html */
+export const viewport: Viewport = {
+  themeColor: "#0E0820",
+  colorScheme: "dark",
+};
 
 export const metadata: Metadata = {
   title: "เพลงมา — แผงเทปเพลงไทย AI",

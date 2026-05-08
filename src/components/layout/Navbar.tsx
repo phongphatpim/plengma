@@ -30,7 +30,7 @@ export default function Navbar() {
       >
         {/* Logo */}
         <Link
-          href="/"
+          href="/shelf"
           style={{
             display: "flex",
             alignItems: "center",
@@ -42,18 +42,7 @@ export default function Navbar() {
             textDecoration: "none",
           }}
         >
-          <span
-            style={{
-              width: 30,
-              height: 30,
-              borderRadius: "50%",
-              background:
-                "linear-gradient(135deg, var(--gold), var(--magenta) 50%, var(--periwinkle))",
-              display: "inline-block",
-              position: "relative",
-              flexShrink: 0,
-            }}
-          />
+          <span className="plengma-logo-mark" aria-hidden />
           เพลงมา
         </Link>
 

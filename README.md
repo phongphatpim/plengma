@@ -25,7 +25,7 @@ Neo-Retro Cassette hub สำหรับเพลงไทยที่สร้
 
 | Route | Description |
 |-------|-------------|
-| `/` | Coming Soon placeholder |
+| `/` | redirect → `/shelf` (Hub-first ตาม brief) |
 | `/shelf` | แผงเทป Isometric ประจำเดือน |
 | `/submit` | ฟอร์มส่งเพลงขึ้นแผง (4 steps) |
 | `/about` | เกี่ยวกับเพลงมา |
