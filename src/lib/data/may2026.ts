@@ -86,6 +86,22 @@ const sampleTapes: Tape[] = [
     submittedAt: ISO,
     publishedAt: ISO,
   },
+  {
+    id: "PLG-006",
+    position: { row: 5, col: 21 },
+    title: "รวมเพลงสตริง AI ฟังแล้วใจหาย",
+    artist: "Ai Music Channel",
+    genre: "DREAM POP",
+    duration: "60:15",
+    youtubeUrl: "https://www.youtube.com/watch?v=VUCkJ_fM3gM",
+    coverBg: 8,
+    side: "B",
+    tags: ["rare"],
+    listens: 542,
+    likes: 28,
+    submittedAt: ISO,
+    publishedAt: ISO,
+  },  
 ];
 
 /** Retired cells — diagonal pattern on shelf */
