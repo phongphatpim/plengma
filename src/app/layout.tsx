@@ -49,17 +49,26 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "เพลงมา — แผงเทปเพลงไทย AI",
+  title: "เพลงมา — แผงเทปยุคใหม่ของเพลงไทยสร้างสรรค์",
   description:
-    "แผงเทปเพลงไทยที่สร้างด้วย AI คัดสรรเดือนต่อเดือน ส่งเพลงของคุณขึ้นแผง",
-  keywords: ["เพลงไทย", "AI music", "เพลง AI", "plengma", "เพลงมา"],
+    "ฟัง ค้น และส่งเพลงไทยสร้างสรรค์จาก AI ที่คัดสรรแล้ว แผง 300 ช่อง อัปเดตทุกเดือน",
+  keywords: ["เพลงไทย AI", "เพลง AI", "Thai AI Music", "PlengMa", "เพลงมา"],
   openGraph: {
-    title: "เพลงมา — แผงเทปเพลงไทย AI",
-    description: "แผงเทปเพลงไทยคัดสรร สร้างด้วย AI",
-    url: "https://www.plengma.com",
+    title: "เพลงมา — แผงเทปยุคใหม่",
+    description: "ฟัง ค้น และส่งเพลงไทยสร้างสรรค์จาก AI ที่คัดสรรแล้ว",
+    url: "https://plengma.com",
     siteName: "เพลงมา",
     locale: "th_TH",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "เพลงมา — แผงเทปยุคใหม่",
+    description: "ฟัง ค้น และส่งเพลงไทยสร้างสรรค์จาก AI ที่คัดสรรแล้ว",
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 

@@ -1,17 +1,17 @@
 "use client";
-import { Tape } from "@/types";
 
-// ── Tape color palette (15 variants, matches prototype) ──────
-const TAPE_GRADIENTS: Record<number, string> = {
-  1:  "linear-gradient(135deg, #C73D6E, #6B1F38)",
-  2:  "linear-gradient(135deg, #E9B949, #8B5E0F)",
-  3:  "linear-gradient(135deg, #4B5FE8, #2A1A4E)",
-  4:  "linear-gradient(135deg, #6FE3C8, #4B5FE8)",
-  5:  "linear-gradient(135deg, #E85D8C, #7C8BFF)",
-  6:  "linear-gradient(180deg, #2A1A4E, #1A0E38)",
-  7:  "linear-gradient(135deg, #C8941F, #6B4500)",
-  8:  "linear-gradient(135deg, #1A3A38, #0E1F1E)",
-  9:  "linear-gradient(135deg, #4E2A1A, #1F0E08)",
+import type { Tape, TapePosition, TapeSlotClick } from "@/lib/types";
+
+export const TAPE_GRADIENTS: Record<number, string> = {
+  1: "linear-gradient(135deg, #C73D6E, #6B1F38)",
+  2: "linear-gradient(135deg, #E9B949, #8B5E0F)",
+  3: "linear-gradient(135deg, #4B5FE8, #2A1A4E)",
+  4: "linear-gradient(135deg, #6FE3C8, #4B5FE8)",
+  5: "linear-gradient(135deg, #E85D8C, #7C8BFF)",
+  6: "linear-gradient(180deg, #2A1A4E, #1A0E38)",
+  7: "linear-gradient(135deg, #C8941F, #6B4500)",
+  8: "linear-gradient(135deg, #1A3A38, #0E1F1E)",
+  9: "linear-gradient(135deg, #4E2A1A, #1F0E08)",
   10: "linear-gradient(135deg, #3D1A4E, #1A0E38)",
   11: "linear-gradient(135deg, #7C8BFF, #4B5FE8)",
   12: "linear-gradient(135deg, #E85D8C, #6FE3C8)",
@@ -20,81 +20,108 @@ const TAPE_GRADIENTS: Record<number, string> = {
   15: "linear-gradient(135deg, #E9B949, #C73D6E)",
 };
 
-// Light backgrounds need dark text
-const LIGHT_BG = new Set([2, 4, 15]);
+export const LIGHT_BG = new Set([2, 4, 15]);
 
 interface TapeSlotProps {
-  tape: Tape;
-  onClick: (tape: Tape) => void;
+  status: "tape" | "empty" | "retired";
+  position: TapePosition;
+  label: string;
+  tape?: Tape;
+  onClick: (payload: TapeSlotClick) => void;
 }
 
-export default function TapeSlot({ tape, onClick }: TapeSlotProps) {
-  const bg = tape.track ? TAPE_GRADIENTS[(tape.slot % 15) + 1] : undefined;
-  const isLight = LIGHT_BG.has((tape.slot % 15) + 1);
+export default function TapeSlot({ status, position, label, tape, onClick }: TapeSlotProps) {
 
-  // ── Empty slot ────────────────────────────────────────────
-  if (tape.status === "empty") {
+  const fire = (payload: TapeSlotClick) => onClick(payload);
+
+  if (status === "empty") {
     return (
-      <div
-        onClick={() => onClick(tape)}
-        title={`${tape.id} — ว่าง`}
+      <button
+        type="button"
+        onClick={() => fire({ status: "empty", position })}
+        title={`${label} — ว่าง`}
+        className="slot-empty-btn"
         style={{
           position: "relative",
           cursor: "pointer",
+          padding: 0,
+          border: "none",
+          background: "transparent",
+          width: "100%",
+          height: "100%",
           transition: "transform 0.3s cubic-bezier(0.34,1.56,0.64,1)",
         }}
-        className="slot-hover-empty"
       >
         <div
+          className="slot-empty-face"
           style={{
             width: "100%",
             height: "100%",
-            border: "1px dashed rgba(111,227,200,0.35)",
+            border: "1px dashed rgba(244,239,230,0.22)",
             borderRadius: 3,
-            background: "rgba(111,227,200,0.04)",
+            background: "rgba(14,8,32,0.25)",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            justifyContent: "flex-end",
+            justifyContent: "center",
+            gap: 2,
             padding: "0 0 4px",
           }}
         >
           <span
             style={{
+              fontFamily: "var(--font-display)",
+              fontWeight: 700,
+              fontSize: 14,
+              color: "rgba(111,227,200,0.45)",
+              lineHeight: 1,
+            }}
+          >
+            +
+          </span>
+          <span
+            style={{
               fontFamily: "var(--font-mono)",
-              fontSize: 7,
+              fontSize: 6,
               letterSpacing: "0.1em",
-              color: "rgba(111,227,200,0.5)",
+              color: "rgba(244,239,230,0.35)",
               textTransform: "uppercase",
             }}
           >
-            {tape.id}
+            {label}
           </span>
         </div>
-      </div>
+      </button>
     );
   }
 
-  // ── Retired slot ─────────────────────────────────────────
-  if (tape.status === "retired") {
+  if (status === "retired") {
     return (
-      <div
-        onClick={() => onClick(tape)}
-        title={`${tape.id} — RETIRED`}
+      <button
+        type="button"
+        onClick={() => fire({ status: "retired", position })}
+        title={`${label} — RETIRED`}
         style={{
           position: "relative",
           cursor: "pointer",
+          padding: 0,
+          border: "none",
+          background: "transparent",
+          width: "100%",
+          height: "100%",
           transition: "transform 0.3s cubic-bezier(0.34,1.56,0.64,1)",
         }}
+        className="slot-retired-btn"
       >
         <div
+          className="slot-retired-face"
           style={{
             width: "100%",
             height: "100%",
             border: "1px solid rgba(232,93,140,0.2)",
             borderRadius: 3,
             background:
-              "repeating-linear-gradient(45deg,transparent 0,transparent 4px,rgba(232,93,140,0.08) 4px,rgba(232,93,140,0.08) 5px), rgba(232,93,140,0.06)",
+              "repeating-linear-gradient(45deg,transparent 0,transparent 4px,rgba(232,93,140,0.1) 4px,rgba(232,93,140,0.1) 5px), rgba(232,93,140,0.06)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -105,34 +132,43 @@ export default function TapeSlot({ tape, onClick }: TapeSlotProps) {
               fontFamily: "var(--font-display)",
               fontWeight: 700,
               fontSize: 16,
-              color: "rgba(232,93,140,0.4)",
+              color: "rgba(232,93,140,0.45)",
               lineHeight: 1,
             }}
           >
             ×
           </span>
         </div>
-      </div>
+      </button>
     );
   }
 
-  // ── Occupied tape ─────────────────────────────────────────
+  if (!tape) return null;
+
+  const bgKey = Math.min(15, Math.max(1, tape.coverBg));
+  const bg = TAPE_GRADIENTS[bgKey];
+  const isLight = LIGHT_BG.has(bgKey);
   const textColor = isLight ? "rgba(14,8,32,0.85)" : "rgba(244,239,230,0.9)";
   const mutedColor = isLight ? "rgba(14,8,32,0.55)" : "rgba(244,239,230,0.55)";
 
   return (
-    <div
-      onClick={() => onClick(tape)}
-      title={`${tape.id} — ${tape.track?.title}`}
+    <button
+      type="button"
+      onClick={() => fire({ status: "tape", position: tape.position, tape })}
+      title={`${label} — ${tape.title}`}
       style={{
         position: "relative",
         cursor: "pointer",
+        padding: 0,
+        border: "none",
+        background: "transparent",
+        width: "100%",
+        height: "100%",
         transition: "transform 0.3s cubic-bezier(0.34,1.56,0.64,1)",
         transform: "translateZ(8px)",
       }}
       className="slot-hover-tape"
     >
-      {/* Tape body */}
       <div
         style={{
           width: "100%",
@@ -145,7 +181,6 @@ export default function TapeSlot({ tape, onClick }: TapeSlotProps) {
           overflow: "hidden",
         }}
       >
-        {/* Grain texture */}
         <div
           style={{
             position: "absolute",
@@ -157,7 +192,6 @@ export default function TapeSlot({ tape, onClick }: TapeSlotProps) {
             pointerEvents: "none",
           }}
         />
-        {/* Tape label: position id */}
         <div
           style={{
             position: "absolute",
@@ -171,9 +205,8 @@ export default function TapeSlot({ tape, onClick }: TapeSlotProps) {
             color: mutedColor,
           }}
         >
-          {tape.id}
+          {label}
         </div>
-        {/* Spool left */}
         <div
           style={{
             position: "absolute",
@@ -186,7 +219,6 @@ export default function TapeSlot({ tape, onClick }: TapeSlotProps) {
             transform: "translateY(-50%)",
           }}
         />
-        {/* Spool right */}
         <div
           style={{
             position: "absolute",
@@ -199,7 +231,6 @@ export default function TapeSlot({ tape, onClick }: TapeSlotProps) {
             transform: "translateY(-50%)",
           }}
         />
-        {/* Track name — tiny */}
         <div
           style={{
             position: "absolute",
@@ -217,11 +248,9 @@ export default function TapeSlot({ tape, onClick }: TapeSlotProps) {
             WebkitBoxOrient: "vertical",
           }}
         >
-          {tape.track?.title}
+          {tape.title}
         </div>
       </div>
-    </div>
+    </button>
   );
 }
-
-export { TAPE_GRADIENTS, LIGHT_BG };

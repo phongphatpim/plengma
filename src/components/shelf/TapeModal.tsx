@@ -1,36 +1,59 @@
 "use client";
-import { useEffect, useCallback, type CSSProperties } from "react";
-import { Tape } from "@/types";
+
+import { useEffect, useCallback, useMemo, type CSSProperties, type ReactNode } from "react";
+import type { Tape, TapeModalSelection } from "@/lib/types";
+import { formatShelfPosition } from "@/lib/types";
 import { TAPE_GRADIENTS, LIGHT_BG } from "./TapeSlot";
 import Link from "next/link";
 
 interface TapeModalProps {
-  tape: Tape | null;
+  selection: TapeModalSelection | null;
+  /** Tapes on shelf sorted row → col — used for ← → navigation */
+  allTapes: Tape[];
   onClose: () => void;
-  onPrev?: () => void;
-  onNext?: () => void;
+  onTapeNavigate?: (tape: Tape) => void;
 }
 
 const TAG_STYLES: Record<string, { color: string; border: string; bg: string }> = {
   curated: { color: "var(--gold)", border: "var(--gold)", bg: "rgba(233,185,73,0.1)" },
-  hot:     { color: "var(--magenta)", border: "var(--magenta)", bg: "rgba(232,93,140,0.1)" },
-  new:     { color: "var(--mint)", border: "var(--mint)", bg: "rgba(111,227,200,0.08)" },
-  rare:    { color: "var(--periwinkle)", border: "var(--periwinkle)", bg: "rgba(124,139,255,0.1)" },
-  gold:    { color: "var(--gold)", border: "var(--gold)", bg: "rgba(233,185,73,0.1)" },
+  hot: { color: "var(--magenta)", border: "var(--magenta)", bg: "rgba(232,93,140,0.1)" },
+  new: { color: "var(--mint)", border: "var(--mint)", bg: "rgba(111,227,200,0.08)" },
+  rare: { color: "var(--periwinkle)", border: "var(--periwinkle)", bg: "rgba(124,139,255,0.1)" },
 };
 
-export default function TapeModal({ tape, onClose, onPrev, onNext }: TapeModalProps) {
-  const isOpen = !!tape;
+function hashHeights(seed: string, n: number): number[] {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+  return Array.from({ length: n }, (_, i) => {
+    h = (h * 1664525 + 1013904223 + i) >>> 0;
+    return 20 + (h % 80);
+  });
+}
 
-  // Keyboard nav
+export default function TapeModal({ selection, allTapes, onClose, onTapeNavigate }: TapeModalProps) {
+  const isOpen = !!selection;
+
+  const { onPrev, onNext } = useMemo(() => {
+    if (!selection || selection.kind !== "tape" || !onTapeNavigate) {
+      return { onPrev: undefined as (() => void) | undefined, onNext: undefined as (() => void) | undefined };
+    }
+    const idx = allTapes.findIndex((t) => t.id === selection.tape.id);
+    return {
+      onPrev: idx > 0 ? () => onTapeNavigate(allTapes[idx - 1]!) : undefined,
+      onNext: idx >= 0 && idx < allTapes.length - 1 ? () => onTapeNavigate(allTapes[idx + 1]!) : undefined,
+    };
+  }, [selection, allTapes, onTapeNavigate]);
+
   const handleKey = useCallback(
     (e: KeyboardEvent) => {
       if (!isOpen) return;
       if (e.key === "Escape") onClose();
-      if (e.key === "ArrowLeft") onPrev?.();
-      if (e.key === "ArrowRight") onNext?.();
+      if (selection?.kind === "tape") {
+        if (e.key === "ArrowLeft") onPrev?.();
+        if (e.key === "ArrowRight") onNext?.();
+      }
     },
-    [isOpen, onClose, onPrev, onNext]
+    [isOpen, onClose, onPrev, onNext, selection?.kind]
   );
 
   useEffect(() => {
@@ -38,25 +61,18 @@ export default function TapeModal({ tape, onClose, onPrev, onNext }: TapeModalPr
     return () => window.removeEventListener("keydown", handleKey);
   }, [handleKey]);
 
-  // Lock body scroll when open
   useEffect(() => {
     document.body.style.overflow = isOpen ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [isOpen]);
 
-  if (!tape) return null;
+  if (!selection) return null;
 
-  const bgIndex = (tape.slot % 15) + 1;
-  const bg = TAPE_GRADIENTS[bgIndex];
-  const isLight = LIGHT_BG.has(bgIndex);
-  const textColor = isLight ? "rgba(14,8,32,0.95)" : "var(--paper)";
-  const mutedColor = isLight ? "rgba(14,8,32,0.65)" : "rgba(244,239,230,0.65)";
-  const spoolBorder = isLight ? "rgba(14,8,32,0.25)" : "rgba(244,239,230,0.25)";
-
-  // Empty slot modal
-  if (tape.status === "empty") {
+  if (selection.kind === "empty") {
     return (
-      <ModalWrapper onClose={onClose}>
+      <ModalWrapper onClose={onClose} showNav={false}>
         <div
           style={{
             textAlign: "center",
@@ -69,10 +85,10 @@ export default function TapeModal({ tape, onClose, onPrev, onNext }: TapeModalPr
         >
           <div style={{ fontFamily: "var(--font-display)", fontSize: 80, color: "var(--mint)", lineHeight: 1, marginBottom: 16 }}>+</div>
           <h3 style={{ fontFamily: "var(--font-thai)", fontWeight: 700, fontSize: 28, marginBottom: 8 }}>
-            ช่อง {tape.id} ยังว่างอยู่
+            ตำแหน่ง {selection.label} · พื้นที่ว่าง
           </h3>
           <p style={{ color: "rgba(244,239,230,0.65)", marginBottom: 24, fontSize: 15 }}>
-            ส่งเพลงของคุณขึ้นแผงเดือนนี้ได้เลย
+            ส่งเพลงของคุณมาเลย — ช่องนี้รออยู่
           </p>
           <Link
             href="/submit"
@@ -91,17 +107,16 @@ export default function TapeModal({ tape, onClose, onPrev, onNext }: TapeModalPr
               textDecoration: "none",
             }}
           >
-            + ส่งเพลงขึ้นแผง
+            ส่งเพลงของคุณมาเลย →
           </Link>
         </div>
       </ModalWrapper>
     );
   }
 
-  // Retired slot modal
-  if (tape.status === "retired") {
+  if (selection.kind === "retired") {
     return (
-      <ModalWrapper onClose={onClose}>
+      <ModalWrapper onClose={onClose} showNav={false}>
         <div
           style={{
             textAlign: "center",
@@ -114,10 +129,10 @@ export default function TapeModal({ tape, onClose, onPrev, onNext }: TapeModalPr
         >
           <div style={{ fontFamily: "var(--font-display)", fontSize: 80, color: "var(--magenta)", lineHeight: 1, marginBottom: 16 }}>×</div>
           <h3 style={{ fontFamily: "var(--font-thai)", fontWeight: 700, fontSize: 26, marginBottom: 8 }}>
-            ช่อง {tape.id} — RETIRED
+            ตำแหน่ง {selection.label} · RETIRED
           </h3>
           <p style={{ color: "rgba(244,239,230,0.65)", fontSize: 14, marginBottom: 8 }}>
-            เทปนี้เคยมีเพลง แต่ถูกถอดออกจากแผงแล้ว
+            ช่องนี้ถูกถอดออกจากแผงแล้ว
           </p>
           <span
             style={{
@@ -139,14 +154,35 @@ export default function TapeModal({ tape, onClose, onPrev, onNext }: TapeModalPr
     );
   }
 
-  // Occupied tape modal
-  const track = tape.track!;
-  const tags = track.tags ?? [];
+  const tape = selection.tape;
+  return <TapeDetailModal tape={tape} onClose={onClose} onPrev={onPrev} onNext={onNext} />;
+}
+
+function TapeDetailModal({
+  tape,
+  onClose,
+  onPrev,
+  onNext,
+}: {
+  tape: Tape;
+  onClose: () => void;
+  onPrev?: () => void;
+  onNext?: () => void;
+}) {
+  const posLabel = formatShelfPosition(tape.position.row, tape.position.col);
+  const bgIndex = Math.min(15, Math.max(1, tape.coverBg));
+  const bg = TAPE_GRADIENTS[bgIndex];
+  const isLight = LIGHT_BG.has(bgIndex);
+  const textColor = isLight ? "rgba(14,8,32,0.95)" : "var(--paper)";
+  const mutedColor = isLight ? "rgba(14,8,32,0.65)" : "rgba(244,239,230,0.65)";
+  const spoolBorder = isLight ? "rgba(14,8,32,0.25)" : "rgba(244,239,230,0.25)";
+
+  const barHeights = useMemo(() => hashHeights(tape.id, 64), [tape.id]);
+  const playedThrough = 0.35;
 
   return (
-    <ModalWrapper onClose={onClose} onPrev={onPrev} onNext={onNext}>
+    <ModalWrapper onClose={onClose} onPrev={onPrev} onNext={onNext} showNav>
       <div style={{ position: "relative" }}>
-        {/* Position badge */}
         <div
           style={{
             position: "absolute",
@@ -159,16 +195,15 @@ export default function TapeModal({ tape, onClose, onPrev, onNext }: TapeModalPr
             fontFamily: "var(--font-mono)",
             fontWeight: 700,
             fontSize: 12,
-            letterSpacing: "0.2em",
+            letterSpacing: "0.15em",
             boxShadow: "0 4px 12px rgba(233,185,73,0.4)",
             zIndex: 5,
             animation: "posBadgeIn 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.4s backwards",
           }}
         >
-          POS {tape.id}
+          ★ {posLabel}
         </div>
 
-        {/* Big tape visual */}
         <div
           style={{
             position: "relative",
@@ -180,7 +215,6 @@ export default function TapeModal({ tape, onClose, onPrev, onNext }: TapeModalPr
             marginBottom: 16,
           }}
         >
-          {/* Grain */}
           <div
             style={{
               position: "absolute",
@@ -191,7 +225,6 @@ export default function TapeModal({ tape, onClose, onPrev, onNext }: TapeModalPr
               pointerEvents: "none",
             }}
           />
-          {/* Glow */}
           <div
             style={{
               position: "absolute",
@@ -201,7 +234,6 @@ export default function TapeModal({ tape, onClose, onPrev, onNext }: TapeModalPr
               pointerEvents: "none",
             }}
           />
-          {/* Inner border */}
           <div
             style={{
               position: "absolute",
@@ -214,29 +246,24 @@ export default function TapeModal({ tape, onClose, onPrev, onNext }: TapeModalPr
               justifyContent: "space-between",
             }}
           >
-            {/* Header row */}
             <div style={{ display: "flex", justifyContent: "space-between", fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.25em", textTransform: "uppercase" as const, color: mutedColor }}>
-              <span>PLENGMA</span>
-              <span>{track.side ?? "A"} SIDE</span>
+              <span>● {tape.id} / {tape.side}-SIDE · HiFi · {tape.duration}</span>
             </div>
 
-            {/* Content */}
             <div style={{ position: "relative", zIndex: 1 }}>
               <div style={{ fontFamily: "var(--font-thai)", fontWeight: 800, fontSize: 36, lineHeight: 1.05, color: textColor, letterSpacing: "-0.02em", marginBottom: 6 }}>
-                {track.title}
+                {tape.title}
               </div>
               <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: mutedColor, letterSpacing: "0.15em", textTransform: "uppercase" as const }}>
-                {track.artistName}
+                {tape.artist} · {tape.genre} · {tape.duration}
               </div>
             </div>
 
-            {/* Side watermark */}
             <div style={{ position: "absolute", bottom: 24, right: 28, fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 90, color: isLight ? "rgba(14,8,32,0.08)" : "rgba(244,239,230,0.07)", lineHeight: 0.8, letterSpacing: "-0.04em", userSelect: "none" }}>
-              {track.side ?? "A"}
+              {tape.side}
             </div>
           </div>
 
-          {/* Spools */}
           {[{ side: "left" as const }, { side: "right" as const }].map(({ side }) => (
             <div
               key={side}
@@ -265,7 +292,6 @@ export default function TapeModal({ tape, onClose, onPrev, onNext }: TapeModalPr
           ))}
         </div>
 
-        {/* Info section */}
         <div
           style={{
             background: "rgba(36,23,66,0.88)",
@@ -275,9 +301,8 @@ export default function TapeModal({ tape, onClose, onPrev, onNext }: TapeModalPr
             padding: 24,
           }}
         >
-          {/* Tags */}
           <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" as const }}>
-            {tags.map((tag) => {
+            {tape.tags.map((tag) => {
               const s = TAG_STYLES[tag] ?? TAG_STYLES.new;
               return (
                 <span
@@ -298,12 +323,8 @@ export default function TapeModal({ tape, onClose, onPrev, onNext }: TapeModalPr
                 </span>
               );
             })}
-            <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, padding: "5px 10px", borderRadius: 100, letterSpacing: "0.2em", textTransform: "uppercase" as const, border: "1px solid rgba(124,139,255,0.5)", color: "var(--periwinkle)", background: "rgba(124,139,255,0.08)" }}>
-              {track.genre ?? "—"}
-            </span>
           </div>
 
-          {/* Stats */}
           <div
             style={{
               display: "grid",
@@ -312,22 +333,13 @@ export default function TapeModal({ tape, onClose, onPrev, onNext }: TapeModalPr
               padding: "16px 0",
               borderTop: "1px solid rgba(244,239,230,0.1)",
               borderBottom: "1px solid rgba(244,239,230,0.1)",
-              marginBottom: 20,
+              marginBottom: 16,
             }}
           >
             {[
-              {
-                label: "ผู้ฟัง",
-                value: (track.playCount ?? 0).toLocaleString(),
-              },
-              {
-                label: "ถูกใจ",
-                value:
-                  track.likes != null
-                    ? track.likes.toLocaleString()
-                    : "—",
-              },
-              { label: "ความยาว", value: track.duration ?? "—" },
+              { label: "ผู้ฟัง", value: tape.listens.toLocaleString() },
+              { label: "ถูกใจ", value: tape.likes.toLocaleString() },
+              { label: "ความยาว", value: tape.duration },
             ].map(({ label, value }) => (
               <div key={label} style={{ textAlign: "center" }}>
                 <div style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 20, color: "var(--paper)", marginBottom: 4 }}>{value}</div>
@@ -336,8 +348,35 @@ export default function TapeModal({ tape, onClose, onPrev, onNext }: TapeModalPr
             ))}
           </div>
 
-          {/* Curator note */}
-          {track.curatorNote && (
+          <div style={{ display: "flex", alignItems: "flex-end", gap: 2, height: 48, marginBottom: 8 }}>
+            {barHeights.map((h, i) => {
+              const played = i / barHeights.length < playedThrough;
+              return (
+                <div
+                  key={i}
+                  style={{
+                    flex: 1,
+                    minWidth: 2,
+                    height: `${h}%`,
+                    borderRadius: 1,
+                    background: played ? "var(--gold)" : "rgba(244,239,230,0.12)",
+                  }}
+                />
+              );
+            })}
+          </div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(244,239,230,0.5)", marginBottom: 20 }}>
+            {(() => {
+              const [m, s] = tape.duration.split(":");
+              const sec = parseInt(m ?? "0", 10) * 60 + parseInt(s ?? "0", 10);
+              const cur = Math.floor(sec * playedThrough);
+              const cm = Math.floor(cur / 60);
+              const cs = cur % 60;
+              return `${String(cm).padStart(2, "0")}:${String(cs).padStart(2, "0")} / ${tape.duration}`;
+            })()}
+          </div>
+
+          {tape.curatorNote && (
             <blockquote
               style={{
                 borderLeft: "3px solid var(--gold)",
@@ -349,17 +388,17 @@ export default function TapeModal({ tape, onClose, onPrev, onNext }: TapeModalPr
                 lineHeight: 1.6,
               }}
             >
-              {track.curatorNote}
+              {tape.curatorNote}
             </blockquote>
           )}
 
-          {/* CTA */}
-          {track.audioUrl && (
+          <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 10 }}>
             <a
-              href={track.audioUrl}
+              href={tape.youtubeUrl}
               target="_blank"
               rel="noopener noreferrer"
               style={{
+                flex: "1 1 140px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -372,17 +411,51 @@ export default function TapeModal({ tape, onClose, onPrev, onNext }: TapeModalPr
                 padding: "14px",
                 borderRadius: 100,
                 textDecoration: "none",
-                width: "100%",
-                transition: "all 0.2s ease",
               }}
             >
-              ▶ ฟังเพลงนี้
+              ▶ ฟัง
             </a>
-          )}
+            <button
+              type="button"
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: "50%",
+                border: "1px solid rgba(244,239,230,0.2)",
+                background: "rgba(244,239,230,0.06)",
+                color: "var(--magenta)",
+                cursor: "pointer",
+                fontSize: 18,
+              }}
+              aria-label="ถูกใจ"
+            >
+              ♡
+            </button>
+            <a
+              href={tape.youtubeUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: "50%",
+                border: "1px solid rgba(244,239,230,0.2)",
+                background: "rgba(244,239,230,0.06)",
+                color: "var(--paper)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                textDecoration: "none",
+                fontSize: 16,
+              }}
+              aria-label="เปิด YouTube"
+            >
+              ↗
+            </a>
+          </div>
         </div>
       </div>
 
-      {/* Keyframe styles */}
       <style>{`
         @keyframes spoolSpin { to { transform: translateY(-50%) rotate(360deg); } }
         @keyframes glowPulse { 0%,100% { opacity:0.5; transform:scale(1); } 50% { opacity:0.8; transform:scale(1.05); } }
@@ -392,17 +465,18 @@ export default function TapeModal({ tape, onClose, onPrev, onNext }: TapeModalPr
   );
 }
 
-// ── Shared wrapper with backdrop & nav arrows ─────────────────
 function ModalWrapper({
   children,
   onClose,
   onPrev,
   onNext,
+  showNav,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   onClose: () => void;
   onPrev?: () => void;
   onNext?: () => void;
+  showNav: boolean;
 }) {
   return (
     <div
@@ -419,36 +493,29 @@ function ModalWrapper({
       role="dialog"
       aria-modal="true"
     >
-      {/* Backdrop */}
       <div
         onClick={onClose}
         style={{
           position: "absolute",
           inset: 0,
-          background: "rgba(14,8,32,0.80)",
+          background: "rgba(14,8,32,0.78)",
           backdropFilter: "blur(16px) saturate(120%)",
           WebkitBackdropFilter: "blur(16px) saturate(120%)",
           cursor: "pointer",
         }}
       />
 
-      {/* Prev / Next nav */}
-      {onPrev && (
-        <button
-          onClick={onPrev}
-          style={navBtnStyle("left")}
-          aria-label="เทปก่อนหน้า"
-        >←</button>
+      {showNav && onPrev && (
+        <button type="button" onClick={onPrev} style={navBtnStyle("left")} aria-label="เทปก่อนหน้า">
+          ←
+        </button>
       )}
-      {onNext && (
-        <button
-          onClick={onNext}
-          style={navBtnStyle("right")}
-          aria-label="เทปถัดไป"
-        >→</button>
+      {showNav && onNext && (
+        <button type="button" onClick={onNext} style={navBtnStyle("right")} aria-label="เทปถัดไป">
+          →
+        </button>
       )}
 
-      {/* Content */}
       <div
         style={{
           position: "relative",
@@ -457,12 +524,12 @@ function ModalWrapper({
           width: "100%",
           maxHeight: "90dvh",
           overflowY: "auto",
-          animation: "modalIn 0.5s cubic-bezier(0.34,1.56,0.64,1)",
+          animation: "modalIn 0.6s cubic-bezier(0.34,1.56,0.64,1)",
           paddingTop: 16,
         }}
       >
-        {/* Close button */}
         <button
+          type="button"
           onClick={onClose}
           aria-label="ปิด"
           style={{
@@ -482,7 +549,6 @@ function ModalWrapper({
             fontSize: 15,
             zIndex: 20,
             backdropFilter: "blur(8px)",
-            transition: "all 0.2s ease",
           }}
         >
           ✕
@@ -493,7 +559,7 @@ function ModalWrapper({
 
       <style>{`
         @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-        @keyframes modalIn { from { transform:scale(0.6) translateY(30px); opacity:0; } to { transform:scale(1) translateY(0); opacity:1; } }
+        @keyframes modalIn { from { transform:scale(0.5) translateY(40px); opacity:0; } to { transform:scale(1) translateY(0); opacity:1; } }
       `}</style>
     </div>
   );
@@ -518,6 +584,5 @@ function navBtnStyle(side: "left" | "right"): CSSProperties {
     justifyContent: "center",
     fontSize: 20,
     backdropFilter: "blur(8px)",
-    transition: "all 0.2s ease",
   };
 }

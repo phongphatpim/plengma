@@ -1,51 +1,61 @@
 "use client";
-import { useState, useCallback } from "react";
-import { Tape } from "@/types";
+
+import { useState, useCallback, useMemo } from "react";
+import type { ShelfMonth, TapeModalSelection, TapeSlotClick, Tape } from "@/lib/types";
+import { formatShelfPosition, positionKey, shelfSlotIndex, SHELF_COLS, SHELF_ROWS } from "@/lib/types";
 import TapeSlot from "./TapeSlot";
 import TapeModal from "./TapeModal";
 
 interface IsoShelfProps {
-  tapes: Tape[];
+  shelf: ShelfMonth;
   label?: string;
-  rows?: number;
-  cols?: number;
 }
 
 export default function IsoShelf({
-  tapes,
+  shelf,
   label = "★ MAY 2026 SHELF · ROW A–J · POSITION 01–30",
-  rows = 10,
-  cols = 30,
 }: IsoShelfProps) {
-  const [selected, setSelected] = useState<Tape | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<TapeModalSelection | null>(null);
 
-  // Build a lookup map: slotIndex → Tape
-  const tapeMap = new Map(tapes.map((t) => [t.slot, t]));
+  const slotMap = useMemo(() => {
+    const m = new Map<string, Tape>();
+    for (const t of shelf.tapes) {
+      m.set(positionKey(t.position), t);
+    }
+    return m;
+  }, [shelf.tapes]);
 
-  // Occupied tapes list (for prev/next nav in modal)
-  const occupiedSlots = tapes
-    .filter((t) => t.status === "occupied")
-    .sort((a, b) => a.slot - b.slot);
+  const retiredSet = useMemo(
+    () => new Set(shelf.retiredPositions.map(positionKey)),
+    [shelf.retiredPositions]
+  );
 
-  const handleSelect = useCallback((tape: Tape) => {
-    setSelected(tape);
+  const allTapes = useMemo(
+    () =>
+      [...shelf.tapes].sort(
+        (a, b) => shelfSlotIndex(a.position.row, a.position.col) - shelfSlotIndex(b.position.row, b.position.col)
+      ),
+    [shelf.tapes]
+  );
+
+  const handleSlotClick = useCallback((click: TapeSlotClick) => {
+    if (click.status === "tape") {
+      setSelectedSlot({ kind: "tape", tape: click.tape });
+      return;
+    }
+    const lbl = formatShelfPosition(click.position.row, click.position.col);
+    if (click.status === "empty") {
+      setSelectedSlot({ kind: "empty", position: click.position, label: lbl });
+      return;
+    }
+    setSelectedSlot({ kind: "retired", position: click.position, label: lbl });
   }, []);
 
-  const handlePrev = useCallback(() => {
-    if (!selected || selected.status !== "occupied") return;
-    const idx = occupiedSlots.findIndex((t) => t.slot === selected.slot);
-    if (idx > 0) setSelected(occupiedSlots[idx - 1]);
-  }, [selected, occupiedSlots]);
-
-  const handleNext = useCallback(() => {
-    if (!selected || selected.status !== "occupied") return;
-    const idx = occupiedSlots.findIndex((t) => t.slot === selected.slot);
-    if (idx < occupiedSlots.length - 1) setSelected(occupiedSlots[idx + 1]);
-  }, [selected, occupiedSlots]);
+  const rows = SHELF_ROWS;
+  const cols = SHELF_COLS;
 
   return (
     <>
-      {/* Shelf container */}
       <div
         style={{
           background: "rgba(26,16,48,0.5)",
@@ -56,7 +66,6 @@ export default function IsoShelf({
           overflow: "hidden",
         }}
       >
-        {/* Wood texture overlay */}
         <div
           style={{
             position: "absolute",
@@ -69,7 +78,6 @@ export default function IsoShelf({
           }}
         />
 
-        {/* Shelf header */}
         <div
           style={{
             position: "relative",
@@ -95,6 +103,7 @@ export default function IsoShelf({
             {["−", "+", "⌕"].map((icon) => (
               <button
                 key={icon}
+                type="button"
                 style={{
                   width: 30,
                   height: 30,
@@ -115,7 +124,6 @@ export default function IsoShelf({
           </div>
         </div>
 
-        {/* ISO Viewport — scrollable */}
         <div
           style={{
             position: "relative",
@@ -142,7 +150,6 @@ export default function IsoShelf({
               position: "relative",
             }}
           >
-            {/* Row-divider lines (every 2 rows) */}
             <div
               style={{
                 position: "absolute",
@@ -164,42 +171,57 @@ export default function IsoShelf({
               }}
             />
 
-            {/* Render all cells */}
             {Array.from({ length: rows * cols }, (_, i) => {
               const r = Math.floor(i / cols);
               const c = i % cols;
-              const rowLetter = "ABCDEFGHIJ"[r];
-              const id = `${rowLetter}-${String(c + 1).padStart(2, "0")}`;
-              const tape: Tape = tapeMap.get(i) ?? {
-                id,
-                slot: i,
-                status: "empty",
-              };
+              const pos = { row: r, col: c };
+              const id = formatShelfPosition(r, c);
+              const key = positionKey(pos);
 
-              return (
-                <TapeSlot key={i} tape={{ ...tape, id }} onClick={handleSelect} />
-              );
+              if (retiredSet.has(key)) {
+                return <TapeSlot key={i} status="retired" position={pos} label={id} onClick={handleSlotClick} />;
+              }
+
+              const tape = slotMap.get(key);
+              if (tape) {
+                return <TapeSlot key={i} status="tape" position={pos} label={id} tape={tape} onClick={handleSlotClick} />;
+              }
+
+              return <TapeSlot key={i} status="empty" position={pos} label={id} onClick={handleSlotClick} />;
             })}
           </div>
         </div>
       </div>
 
-      {/* Scrollbar style */}
       <style>{`
         .shelf-scroll { -webkit-overflow-scrolling: touch; }
         .shelf-scroll::-webkit-scrollbar { height: 6px; }
         .shelf-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 3px; }
         .shelf-scroll::-webkit-scrollbar-thumb { background: rgba(233,185,73,0.4); border-radius: 3px; }
-        .slot-hover-tape:hover { transform: translateZ(16px) translateY(-4px) !important; }
-        .slot-hover-empty:hover { transform: translateZ(4px) !important; }
+        .slot-hover-tape:hover {
+          transform: translateZ(20px) translateY(-4px) !important;
+          filter: drop-shadow(0 12px 20px rgba(0,0,0,0.55));
+        }
+        .slot-empty-btn:hover .slot-empty-face {
+          border-color: #6FE3C8 !important;
+          box-shadow: 0 0 0 1px rgba(111,227,200,0.35);
+        }
+        .slot-empty-btn:hover {
+          transform: translateZ(20px) translateY(-2px) !important;
+        }
+        .slot-retired-btn:hover .slot-retired-face {
+          background: repeating-linear-gradient(45deg,transparent 0,transparent 4px,rgba(232,93,140,0.16) 4px,rgba(232,93,140,0.16) 5px), rgba(232,93,140,0.12) !important;
+        }
+        .slot-retired-btn:hover {
+          transform: translateZ(12px) !important;
+        }
       `}</style>
 
-      {/* Modal */}
       <TapeModal
-        tape={selected}
-        onClose={() => setSelected(null)}
-        onPrev={handlePrev}
-        onNext={handleNext}
+        selection={selectedSlot}
+        allTapes={allTapes}
+        onClose={() => setSelectedSlot(null)}
+        onTapeNavigate={(tape) => setSelectedSlot({ kind: "tape", tape })}
       />
     </>
   );
