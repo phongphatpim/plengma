@@ -226,7 +226,10 @@ export default function AboutPage() {
               padding: "8px 14px",
             }}
           >
-            ทุกเพลงมี AI Disclosure badge แสดงเครื่องมือที่ใช้
+            ระบบความโปร่งใสบนแผง: badge กระชับมุมเทป · รายละเอียด approach + เครื่องมือใน modal
+          </p>
+          <p style={{ ...bodyMuted, maxWidth: 720, marginTop: 16 }}>
+            ทีมคัดสรรบันทึกโน้ตสั้นๆ บนแต่ละเทปเพื่อบอกว่าเลือกเพลงนั้นเพราะอะไร — ไม่ใช่แค่ “ผ่าน/ไม่ผ่าน” แต่เป็นเสียงของทีมงานจริงๆ
           </p>
         </section>
 

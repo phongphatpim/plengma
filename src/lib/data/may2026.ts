@@ -20,6 +20,11 @@ const sampleTapes: Tape[] = [
     curatorNote: "NIRA หยิบความเศร้าออกมาตั้งโต๊ะ ฟังแล้วอยากฝน",
     submittedAt: ISO,
     publishedAt: ISO,
+    transparency: {
+      tools: ["Suno", "Logic Pro"],
+      approach: "hybrid",
+      humanInput: "เนื้อร้องและทำนองหลักแต่งเอง ใช้ Suno ช่วยเรียบเรียงแนวทาง",
+    },
   },
   {
     id: "PLG-002",
@@ -37,6 +42,7 @@ const sampleTapes: Tape[] = [
     curatorNote: "ครื้นเครงเบาๆ ฟังตอนบ่ายสามได้เลย",
     submittedAt: ISO,
     publishedAt: ISO,
+    transparency: { tools: ["Suno v4"], approach: "full-ai" },
   },
   {
     id: "PLG-003",
@@ -53,6 +59,7 @@ const sampleTapes: Tape[] = [
     likes: 103,
     submittedAt: ISO,
     publishedAt: ISO,
+    transparency: { tools: ["ElevenLabs", "Ableton"], approach: "ai-vocal" },
   },
   {
     id: "PLG-004",
@@ -69,6 +76,7 @@ const sampleTapes: Tape[] = [
     likes: 87,
     submittedAt: ISO,
     publishedAt: ISO,
+    transparency: { tools: ["Suno"], approach: "ai-instrumental" },
   },
   {
     id: "PLG-005",
@@ -85,6 +93,7 @@ const sampleTapes: Tape[] = [
     likes: 28,
     submittedAt: ISO,
     publishedAt: ISO,
+    transparency: { tools: ["Reaper", "Voice AI"], approach: "hybrid" },
   },
   {
     id: "PLG-006",
@@ -101,7 +110,8 @@ const sampleTapes: Tape[] = [
     likes: 28,
     submittedAt: ISO,
     publishedAt: ISO,
-  },  
+    transparency: { tools: ["YouTube", "Playlist curation"], approach: "hybrid" },
+  },
 ];
 
 /** Retired cells — diagonal pattern on shelf */

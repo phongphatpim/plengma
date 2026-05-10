@@ -22,6 +22,14 @@ export type TapeGenre =
 
 export type TapeTag = "new" | "hot" | "curated" | "rare";
 
+export type AIApproach = "full-ai" | "ai-vocal" | "ai-instrumental" | "hybrid";
+
+export interface Transparency {
+  tools: string[];
+  approach: AIApproach;
+  humanInput?: string;
+}
+
 export interface TapePosition {
   row: number;
   col: number;
@@ -46,6 +54,8 @@ export interface Tape {
   curatorNote?: string;
   submittedAt: string;
   publishedAt: string;
+  /** AI / tools disclosure — shown on shelf + modal */
+  transparency?: Transparency;
 }
 
 export interface ShelfMonth {

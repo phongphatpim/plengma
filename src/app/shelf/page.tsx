@@ -1,10 +1,12 @@
 import Navbar from "@/components/layout/Navbar";
 import IsoShelf from "@/components/shelf/IsoShelf";
 import ShelfDaysLeft from "@/components/shelf/ShelfDaysLeft";
-import { may2026 } from "@/lib/mockData";
+import { getMay2026Shelf } from "@/lib/shelf-data";
 import type { ShelfMonth } from "@/lib/types";
 import Link from "next/link";
 import type { Metadata } from "next";
+
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "แผงเดือน MAY 2026 — เพลงมา",
@@ -31,9 +33,10 @@ function shelfStatsBar(shelf: ShelfMonth) {
   return { songCount, totalListens, totalLikes };
 }
 
-export default function ShelfPage() {
-  const header = shelfHeaderStats(may2026);
-  const bar = shelfStatsBar(may2026);
+export default async function ShelfPage() {
+  const shelf = await getMay2026Shelf();
+  const header = shelfHeaderStats(shelf);
+  const bar = shelfStatsBar(shelf);
 
   const listensDisplay =
     bar.totalListens >= 1000 ? (bar.totalListens / 1000).toFixed(1).replace(/\.0$/, "") + "k" : String(bar.totalListens);
@@ -206,7 +209,7 @@ export default function ShelfPage() {
 
         {/* 3. IsoShelf — full width */}
         <div style={{ width: "100%", padding: "0 24px 40px", background: "#0E0820" }}>
-          <IsoShelf shelf={may2026} label="★ MAY 2026 SHELF · ROW A–J · POSITION 01–30" />
+          <IsoShelf shelf={shelf} label="★ MAY 2026 SHELF · ROW A–J · POSITION 01–30" />
         </div>
 
         {/* 4. StatsBar */}

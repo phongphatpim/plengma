@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, useCallback, useMemo, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useCallback, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import type { Tape, TapeModalSelection } from "@/lib/types";
 import { formatShelfPosition } from "@/lib/types";
 import { TAPE_GRADIENTS, LIGHT_BG } from "./TapeSlot";
 import Link from "next/link";
+import CuratorNoteBlock from "./CuratorNoteBlock";
+import TransparencyBadge from "@/components/ui/TransparencyBadge";
+import { parseToolLabels } from "@/lib/parse-tools";
 
 interface TapeModalProps {
   selection: TapeModalSelection | null;
@@ -179,6 +182,35 @@ function TapeDetailModal({
 
   const barHeights = useMemo(() => hashHeights(tape.id, 64), [tape.id]);
   const playedThrough = 0.35;
+  const tapeWithTransparency = useMemo((): Tape => {
+    if (tape.transparency) return tape;
+    const tools = parseToolLabels(tape.tools);
+    return {
+      ...tape,
+      transparency: { tools, approach: "hybrid" },
+    };
+  }, [tape]);
+  const [shareHint, setShareHint] = useState<string | null>(null);
+
+  useEffect(() => {
+    setShareHint(null);
+  }, [tape.id]);
+
+  useEffect(() => {
+    if (!shareHint) return;
+    const t = window.setTimeout(() => setShareHint(null), 3500);
+    return () => clearTimeout(t);
+  }, [shareHint]);
+
+  const copyShareLink = useCallback(async () => {
+    const url = `${window.location.origin}/track/${encodeURIComponent(tape.id)}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setShareHint("คัดลอกลิงก์แชร์แล้ว");
+    } catch {
+      setShareHint("คัดลอกไม่สำเร็จ — ลองอีกครั้งหรือคัดลอกด้วยตนเอง");
+    }
+  }, [tape.id]);
 
   return (
     <ModalWrapper onClose={onClose} onPrev={onPrev} onNext={onNext} showNav>
@@ -301,6 +333,33 @@ function TapeDetailModal({
             padding: 24,
           }}
         >
+          <div style={{ marginBottom: 20 }}>
+            <h2
+              style={{
+                fontFamily: "var(--font-thai)",
+                fontWeight: 800,
+                fontSize: 22,
+                lineHeight: 1.2,
+                color: "var(--paper)",
+                margin: "0 0 6px",
+              }}
+            >
+              {tape.title}
+            </h2>
+            <p
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: 12,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase" as const,
+                color: "rgba(244,239,230,0.55)",
+                margin: 0,
+              }}
+            >
+              {tape.artist} · {tape.genre}
+            </p>
+          </div>
+
           <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" as const }}>
             {tape.tags.map((tag) => {
               const s = TAG_STYLES[tag] ?? TAG_STYLES.new;
@@ -348,6 +407,22 @@ function TapeDetailModal({
             ))}
           </div>
 
+          {tape.curatorNote ? <CuratorNoteBlock text={tape.curatorNote} /> : null}
+
+          {tape.description ? (
+            <p
+              style={{
+                fontFamily: "var(--font-thai)",
+                fontSize: 14,
+                lineHeight: 1.75,
+                color: "rgba(244,239,230,0.72)",
+                margin: "0 0 20px",
+              }}
+            >
+              {tape.description}
+            </p>
+          ) : null}
+
           <div style={{ display: "flex", alignItems: "flex-end", gap: 2, height: 48, marginBottom: 8 }}>
             {barHeights.map((h, i) => {
               const played = i / barHeights.length < playedThrough;
@@ -375,22 +450,6 @@ function TapeDetailModal({
               return `${String(cm).padStart(2, "0")}:${String(cs).padStart(2, "0")} / ${tape.duration}`;
             })()}
           </div>
-
-          {tape.curatorNote && (
-            <blockquote
-              style={{
-                borderLeft: "3px solid var(--gold)",
-                paddingLeft: 16,
-                margin: "0 0 20px",
-                color: "rgba(244,239,230,0.7)",
-                fontSize: 14,
-                fontStyle: "italic",
-                lineHeight: 1.6,
-              }}
-            >
-              {tape.curatorNote}
-            </blockquote>
-          )}
 
           <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 10 }}>
             <a
@@ -431,6 +490,23 @@ function TapeDetailModal({
             >
               ♡
             </button>
+            <button
+              type="button"
+              onClick={() => void copyShareLink()}
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: "50%",
+                border: "1px solid rgba(244,239,230,0.2)",
+                background: "rgba(244,239,230,0.06)",
+                color: "var(--mint)",
+                cursor: "pointer",
+                fontSize: 18,
+              }}
+              aria-label="คัดลอกลิงก์แชร์เทปนี้"
+            >
+              🔗
+            </button>
             <a
               href={tape.youtubeUrl}
               target="_blank"
@@ -453,6 +529,21 @@ function TapeDetailModal({
               ↗
             </a>
           </div>
+          {shareHint ? (
+            <p
+              style={{
+                margin: "12px 0 0",
+                fontFamily: "var(--font-thai)",
+                fontSize: 13,
+                color: "rgba(111,227,200,0.95)",
+                textAlign: "center",
+              }}
+            >
+              {shareHint}
+            </p>
+          ) : null}
+
+          <TransparencyBadge tape={tapeWithTransparency} variant="full" />
         </div>
       </div>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import type { Tape, TapePosition, TapeSlotClick } from "@/lib/types";
+import TransparencyBadge from "@/components/ui/TransparencyBadge";
 
 export const TAPE_GRADIENTS: Record<number, string> = {
   1: "linear-gradient(135deg, #C73D6E, #6B1F38)",
@@ -195,6 +196,18 @@ export default function TapeSlot({ status, position, label, tape, onClick }: Tap
         <div
           style={{
             position: "absolute",
+            top: 2,
+            left: 2,
+            zIndex: 3,
+            maxWidth: "calc(100% - 8px)",
+            pointerEvents: "none",
+          }}
+        >
+          <TransparencyBadge tape={tape} variant="compact" />
+        </div>
+        <div
+          style={{
+            position: "absolute",
             bottom: 2,
             left: 0,
             right: 0,
@@ -234,7 +247,7 @@ export default function TapeSlot({ status, position, label, tape, onClick }: Tap
         <div
           style={{
             position: "absolute",
-            top: 4,
+            top: 14,
             left: 4,
             right: 4,
             fontFamily: "var(--font-thai)",

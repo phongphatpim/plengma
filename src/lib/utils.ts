@@ -6,6 +6,11 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/** Base URL for public links (emails, status page). Uses NEXT_PUBLIC_SITE_URL in env. */
+export function getPublicSiteBase(): string {
+  return (process.env.NEXT_PUBLIC_SITE_URL ?? "https://plengma.com").replace(/\/+$/, "");
+}
+
 // ─── Brand Constants ──────────────────────────────────────────
 export const BRAND = {
   name: "เพลงมา",

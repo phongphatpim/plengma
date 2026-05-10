@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import type { TapeGenre } from "@/lib/types";
 import { appendSubmission, getNextCatalogNumberFromSheet } from "@/lib/sheets";
+import { notifyAdminNewSubmission } from "@/lib/notify";
 
 const TAPE_GENRES: Set<TapeGenre> = new Set([
   "DREAM POP",
@@ -252,15 +253,29 @@ export async function POST(request: Request) {
     !!process.env.GOOGLE_SHEETS_ID &&
     !!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL &&
     !!process.env.GOOGLE_PRIVATE_KEY;
+  let appendedToSheet = false;
 
   if (hasSheetEnv) {
     try {
       await appendSubmission(sheetPayload);
+      appendedToSheet = true;
     } catch (e) {
       console.warn("[plengma][submit] Google Sheets append failed — continuing", e);
     }
   } else {
     console.warn("[plengma][submit] Google Sheets env not configured — skipping append");
+  }
+
+  if (appendedToSheet) {
+    try {
+      await notifyAdminNewSubmission({
+        catalogId,
+        title: data.title,
+        artist: data.artist,
+      });
+    } catch (e) {
+      console.warn("[plengma][submit] admin notification failed — continuing", e);
+    }
   }
 
   try {
